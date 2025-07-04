@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'Plant',
     'Question',
     'Answer',
+    'watering', # 까먹고 안넣으신거 같아서 추가햇슴
     #basic app
     'django.contrib.admin',
     'django.contrib.auth',
