@@ -1,3 +1,10 @@
+# Watering/admin.py
 from django.contrib import admin
+from .models import Watering
 
-# Register your models here.
+
+@admin.register(Watering)
+class WateringAdmin(admin.ModelAdmin):
+    list_display  = ("id", "plant", "member", "time")
+    list_filter   = ("time",)
+    autocomplete_fields = ("plant", "member")
