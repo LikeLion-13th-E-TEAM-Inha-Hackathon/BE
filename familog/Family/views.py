@@ -18,7 +18,7 @@ from .serializers import (
 )
 from FamilyMember.models import FamilyMember   # 멤버십 모델
 from User.models import User                   # 인증 사용자 모델
-
+from Plant.models import Plant  # 패밀리 생성 시 -> 해당 패밀리의 식물 자동 생성
 
 # ────────────────────────────────────────────────────────────
 # 1) 가족 생성  POST /families
@@ -30,7 +30,25 @@ class FamilyCreateView(generics.CreateAPIView):
     """
     serializer_class = FamilyCreateSerializer
     permission_classes = [permissions.AllowAny]  # 회원가입 전에 가족 생성할 수도 있으므로
+    
+    def perform_create(self, serializer):
+        family = serializer.save()
 
+        # 1. 요청자가 로그인된 유저인 경우 => 방장으로 추가
+        if self.request.user and self.request.user.is_authenticated:
+            FamilyMember.objects.create(
+                user=self.request.user,
+                family=family,
+                role=FamilyMember.LEADER
+            )
+
+        # 2. Plant 자동 생성
+        Plant.objects.create(
+        family=family,
+        type="기본식물 🌱",        # ✅ 존재하는 필드
+        grow_level=0,              # ✅ 기본값과 같지만 명시해도 OK
+        last_watered=None          # ✅ or timezone.now()
+    )
 
 # ────────────────────────────────────────────────────────────
 # 2) 가족 정보  GET /families/<code>
