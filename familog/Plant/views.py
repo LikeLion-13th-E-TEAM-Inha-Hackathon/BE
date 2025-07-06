@@ -1,16 +1,9 @@
-# plant/views.py
-"""
-식물 · 물주기 API
-─────────────────────────────────────────────────────────────
-1. GET  /families/<code>/plant            ─ 화분 상태 조회
-2. POST /families/<code>/plant/water      ─ 물 주기
-"""
-
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from datetime import timedelta
+from django.utils import timezone  # ✅ 추가됨
 
 from Family.models import Family
 from FamilyMember.models import FamilyMember
@@ -61,36 +54,35 @@ class PlantWaterView(generics.GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     SEEDS_PER_WATER = 100
-    COOL_TIME = timedelta(seconds=10)   # 다시 물주기 제한 예시
+    COOL_TIME = timedelta(seconds=10)
 
     def post(self, request, *args, **kwargs):
         family = _get_family(self.kwargs["code"])
         member = _get_member(request.user, family)
         plant  = family.plant
+        now = timezone.now()  # ✅ 현재 시간 기준
 
-        # cool-time 체크
-        if plant.last_watered and (
-            plant.last_watered + self.COOL_TIME > plant.last_watered.now()
-        ):
+        # 쿨타임 체크
+        if plant.last_watered and (plant.last_watered + self.COOL_TIME > now):
             return Response(
                 {"detail": "방금 물을 준 후 쿨타임입니다."},
                 status=status.HTTP_429_TOO_MANY_REQUESTS,
             )
 
-        # 씨앗 체크
+        # 씨앗 부족 체크
         if family.seeds < self.SEEDS_PER_WATER:
             return Response(
                 {"detail": "씨앗이 부족합니다."},
                 status=status.HTTP_409_CONFLICT,
             )
 
-        # 트랜잭션으로 씨앗 차감 + 성장 단계 증가 + 로그생성
+        # 트랜잭션으로 처리
         with transaction.atomic():
             family.seeds -= self.SEEDS_PER_WATER
             family.save(update_fields=["seeds"])
 
             plant.grow_level += 1
-            plant.last_watered = plant.last_watered.now()
+            plant.last_watered = now  # ✅ 여기 고쳤음
             plant.save(update_fields=["grow_level", "last_watered"])
 
             Watering.objects.create(plant=plant, member=member)
