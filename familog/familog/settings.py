@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     'Question',
     'Answer',
     'watering', # 까먹고 안넣으신거 같아서 추가햇슴
+    # third app
+    'rest_framework', # DRF 설치했슴다 => pip3 install djangorestframework
     #basic app
     'django.contrib.admin',
     'django.contrib.auth',
