@@ -12,3 +12,6 @@ db.sqlite3
 
 # 가상환경 폴더
 myenv/
+
+# 캐시 파일
+**/__pycache__/
