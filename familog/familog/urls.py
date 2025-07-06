@@ -60,7 +60,7 @@ urlpatterns = [
     path('families/<str:code>/plant/',        include('Plant.urls')),
 
     # 지윤님 파트 => 5 6
-    
+    path('families/<str:code>/questions/', include('Question.urls')),
     
     # Swagger url
     re_path(r'^swagger(?P<format>\.json|\.yaml)$',
