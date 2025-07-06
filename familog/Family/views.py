@@ -60,6 +60,14 @@ class FamilyJoinView(generics.GenericAPIView):
     def post(self, request, *args, **kwargs):
         family: Family = self.get_object()
         user: User = request.user
+        
+        # # [임시조치] 유저 하드코딩 or request에서 직접 가져오기
+        # username = request.data.get("user")  # {"user": "rlawls1448"} 로 전달해줘야 함
+        # try:
+        #     user = User.objects.get(email=username)  # or nickname=username 등
+        # except User.DoesNotExist:
+        #     return Response({"detail": "사용자를 찾을 수 없습니다."}, status=400)
+        # ####################
 
         # 이미 가족이 있는지(1유저 1가족 규칙) 검사
         if FamilyMember.objects.filter(user=user).exists():
