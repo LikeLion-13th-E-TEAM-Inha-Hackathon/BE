@@ -19,7 +19,7 @@ from .serializers import (
     PlantDetailSerializer,
     PlantWaterResultSerializer,
 )
-from Watering.models import Watering   # 물주기 이력 모델
+from watering.models import Watering   # 물주기 이력 모델
 
 
 # ──────────────────────────────────────────────────────────
