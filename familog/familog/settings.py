@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'watering', # 까먹고 안넣으신거 같아서 추가햇슴
     # third app
     'rest_framework', # DRF 설치했슴다 => pip3 install djangorestframework
+    'drf_yasg', # Swagger 추가
     #basic app
     'django.contrib.admin',
     'django.contrib.auth',
@@ -131,3 +132,7 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+sys.path.append(str(BASE_DIR))
