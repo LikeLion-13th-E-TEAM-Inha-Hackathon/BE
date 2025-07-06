@@ -61,6 +61,7 @@ urlpatterns = [
 
     # 지윤님 파트 => 5 6
     path('families/<str:code>/questions/', include('Question.urls')),
+    path('questions/', include('Answer.urls')),
     
     # Swagger url
     re_path(r'^swagger(?P<format>\.json|\.yaml)$',
