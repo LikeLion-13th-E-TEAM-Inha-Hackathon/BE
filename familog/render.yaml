@@ -1,11 +1,9 @@
 services:
   - type: web
-    name: familog-backend
+    name: familog-api
     env: python
-    buildCommand: "pip install -r requirements.txt"
-    startCommand: "gunicorn familog.wsgi:application"
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn familog.wsgi:application
     envVars:
-      - key: PYTHONPATH
-        value: "/opt/render/project/src"
       - key: DJANGO_SETTINGS_MODULE
         value: familog.settings
