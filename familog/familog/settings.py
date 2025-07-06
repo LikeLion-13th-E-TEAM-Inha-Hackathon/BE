@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     # third app
     'rest_framework', # DRF 설치했슴다 => pip3 install djangorestframework
     'drf_yasg', # Swagger 추가
+    'corsheaders', # CORS 추가
     #basic app
     'django.contrib.admin',
     'django.contrib.auth',
@@ -51,6 +52,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware', # CORS 추가
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -131,3 +133,30 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+### JWT 기반 로그인 구현
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    )
+}
+
+# 커스텀 유저 모델 사용
+AUTH_USER_MODEL = 'User.User'
+
+# Swagger 셋팅
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header',
+            'description': 'JWT 토큰을 입력하세요. 예: Bearer <your_access_token>',
+        }
+    },
+    'USE_SESSION_AUTH': False,
+}
+
+# CORS 셋팅
+CORS_ALLOW_ALL_ORIGINS = True # 개발단계에서만 ㅇㅇ => 나중에 꼭 수정 !!!!! 
