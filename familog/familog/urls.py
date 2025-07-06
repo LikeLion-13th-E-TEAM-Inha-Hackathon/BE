@@ -20,25 +20,39 @@ from django.urls import path, include
 ## Swagger 적용
 from django.urls import re_path
 
-from rest_framework.permissions import AllowAny
+from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg       import openapi
 
 schema_view = get_schema_view(
     openapi.Info(
-        title="FamiLog",
-        default_version='프로젝트 버전(예: 1.1.1)',
-        description="해당 문서 설명(예: likelion-project API 문서)",
-        terms_of_service="https://www.google.com/policies/terms/",
-        contact=openapi.Contact(email="likelion@inha.edu"), # 부가정보
-        license=openapi.License(name="backend"),     # 부가정보
+        title="Familog API",
+        default_version="v1",
+        description="Familog Swagger Docs",
     ),
     public=True,
-    permission_classes=(AllowAny,),
+    permission_classes=[permissions.AllowAny],
+    authentication_classes=[],  # 이 줄 없어도 되긴 함
 )
+
+# 🔐 Swagger에 JWT 입력창 나오게 하기 위한 설정
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header',
+            'description': 'JWT 토큰을 입력하세요. 예: Bearer <your_access_token>',
+        }
+    },
+    'USE_SESSION_AUTH': False,
+}
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    
+    # 로그인 => 1 (진 파트)
+    path('users/', include('User.urls')),
     
     # 진 파트 => 2 3 4 
     path('families/', include('Family.urls')), 
