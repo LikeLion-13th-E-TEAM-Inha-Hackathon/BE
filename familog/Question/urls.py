@@ -6,6 +6,6 @@ from . import views
 from .views import get_today_question, QuestionView
 
 urlpatterns = [
-    path("today", get_today_question), 
-    path("", QuestionView.as_view()),
+    path("today", get_today_question, name="get-today-question"), 
+    path("", QuestionView.as_view(), name="question-list-create"),
 ]

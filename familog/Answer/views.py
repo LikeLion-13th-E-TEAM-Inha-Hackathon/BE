@@ -3,6 +3,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
 from .models import Answer
 from .serializers import AnswerCreateSerializer, AnswerListSerializer
@@ -17,6 +19,10 @@ def get_family_member(user):
 class AnswerView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @swagger_auto_schema(
+        operation_summary="답변 목록 조회",
+        responses={200: AnswerListSerializer(many=True)}
+    )
     def get(self, request, id):
         """답변 목록 조회"""
         try:
@@ -28,6 +34,14 @@ class AnswerView(APIView):
         serializer = AnswerListSerializer(answers, many=True)
         return Response(serializer.data)
 
+    @swagger_auto_schema(
+        operation_summary="답변 작성",
+        request_body=AnswerCreateSerializer,
+        responses={201: openapi.Response("답변 생성", schema=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={"answerId": openapi.Schema(type=openapi.TYPE_INTEGER)}
+        ))}
+    )
     def post(self, request, id):
         """답변 작성 (내 답변)"""
         try:
@@ -50,6 +64,11 @@ class AnswerView(APIView):
 class MyAnswerUpdateView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @swagger_auto_schema(
+        operation_summary="내 답변 수정",
+        request_body=AnswerCreateSerializer,
+        responses={204: "수정 완료", 404: "답변 없음"}
+    )
     def patch(self, request, id):
         """내 답변 수정"""
         try:
