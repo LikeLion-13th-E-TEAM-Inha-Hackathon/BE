@@ -2,8 +2,11 @@ services:
   - type: web
     name: familog-api
     env: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn familog.wsgi:application
+    buildCommand: |
+      pip install -r requirements.txt
+      cd familog
+      python manage.py collectstatic --noinput
+    startCommand: gunicorn familog.wsgi:application --chdir=familog
     envVars:
       - key: DJANGO_SETTINGS_MODULE
         value: familog.settings
