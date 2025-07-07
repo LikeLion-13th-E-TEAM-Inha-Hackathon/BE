@@ -1,4 +1,3 @@
-# families/views.py
 """
 가족(Family) 관련 API 뷰 모음
 ─────────────────────────────────────────────────────────────
@@ -8,20 +7,23 @@
 """
 
 from django.shortcuts import get_object_or_404
-from rest_framework import generics, status, permissions
+from rest_framework import generics, status, permissions, serializers
 from rest_framework.response import Response
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
 from .models import Family
 from .serializers import (
     FamilyCreateSerializer,
     FamilyDetailSerializer,
 )
-from FamilyMember.models import FamilyMember   # 멤버십 모델
-from User.models import User                   # 인증 사용자 모델
-from Plant.models import Plant  # 패밀리 생성 시 -> 해당 패밀리의 식물 자동 생성
+from FamilyMember.models import FamilyMember
+from User.models import User
+from Plant.models import Plant
+
 
 # ────────────────────────────────────────────────────────────
-# 1) 가족 생성  POST /families
+# ✅ 가족 생성  POST /families
 # ────────────────────────────────────────────────────────────
 class FamilyCreateView(generics.CreateAPIView):
     """
@@ -29,8 +31,8 @@ class FamilyCreateView(generics.CreateAPIView):
     응답  : {"code":"ABC12345"}
     """
     serializer_class = FamilyCreateSerializer
-    permission_classes = [permissions.AllowAny]  # 회원가입 전에 가족 생성할 수도 있으므로
-    
+    permission_classes = [permissions.AllowAny]
+
     def perform_create(self, serializer):
         family = serializer.save()
 
@@ -42,16 +44,17 @@ class FamilyCreateView(generics.CreateAPIView):
                 role=FamilyMember.LEADER
             )
 
-        # 2. Plant 자동 생성
+        # 2. 식물 자동 생성
         Plant.objects.create(
-        family=family,
-        type="기본식물 🌱",        # ✅ 존재하는 필드
-        grow_level=0,              # ✅ 기본값과 같지만 명시해도 OK
-        last_watered=None          # ✅ or timezone.now()
-    )
+            family=family,
+            type="기본식물 🌱",
+            grow_level=0,
+            last_watered=None
+        )
+
 
 # ────────────────────────────────────────────────────────────
-# 2) 가족 정보  GET /families/<code>
+# ✅ 가족 정보  GET /families/<code>
 # ────────────────────────────────────────────────────────────
 class FamilyDetailView(generics.RetrieveAPIView):
     """
@@ -64,7 +67,19 @@ class FamilyDetailView(generics.RetrieveAPIView):
 
 
 # ────────────────────────────────────────────────────────────
-# 3) 가족 참여  POST /families/<code>/join
+# ✅ 가족 참여 Serializer (요청/응답 명세용)
+# ────────────────────────────────────────────────────────────
+class FamilyJoinRequestSerializer(serializers.Serializer):
+    """빈 요청용 — Swagger 문서 생성을 위해 명시"""
+    pass
+
+
+class FamilyJoinResponseSerializer(serializers.Serializer):
+    memberId = serializers.IntegerField()
+
+
+# ────────────────────────────────────────────────────────────
+# ✅ 가족 참여  POST /families/<code>/join
 # ────────────────────────────────────────────────────────────
 class FamilyJoinView(generics.GenericAPIView):
     """
@@ -74,26 +89,27 @@ class FamilyJoinView(generics.GenericAPIView):
     queryset = Family.objects.all()
     lookup_field = "code"
     permission_classes = [permissions.IsAuthenticated]
+    serializer_class = FamilyJoinRequestSerializer  # Swagger용 빈 요청 스키마
 
+    @swagger_auto_schema(
+        request_body=FamilyJoinRequestSerializer,
+        responses={201: FamilyJoinResponseSerializer}
+    )
     def post(self, request, *args, **kwargs):
+        # ✅ Swagger 요청 시 실행 방지
+        if getattr(self, 'swagger_fake_view', False):
+            return Response(status=200)
+
         family: Family = self.get_object()
         user: User = request.user
-        
-        # # [임시조치] 유저 하드코딩 or request에서 직접 가져오기
-        # username = request.data.get("user")  # {"user": "rlawls1448"} 로 전달해줘야 함
-        # try:
-        #     user = User.objects.get(email=username)  # or nickname=username 등
-        # except User.DoesNotExist:
-        #     return Response({"detail": "사용자를 찾을 수 없습니다."}, status=400)
-        # ####################
 
-        # 이미 가족이 있는지(1유저 1가족 규칙) 검사
+        # 이미 가족에 속해 있는지 검사
         if FamilyMember.objects.filter(user=user).exists():
             return Response(
                 {"detail": "이미 다른 가족에 속해 있습니다."},
                 status=status.HTTP_409_CONFLICT,
             )
 
-        # 멤버십 생성 (기본 role=MEMBER)
+        # 멤버십 생성
         member = FamilyMember.objects.create(family=family, user=user)
         return Response({"memberId": member.id}, status=status.HTTP_201_CREATED)
