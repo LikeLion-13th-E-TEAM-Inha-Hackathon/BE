@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -52,6 +53,9 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # 이 줄을 가장 위에 추가!
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.security.SecurityMiddleware', # Swagger 정적 파일 제공용
     'corsheaders.middleware.CorsMiddleware', # CORS 추가
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -160,3 +164,12 @@ SWAGGER_SETTINGS = {
 
 # CORS 셋팅
 CORS_ALLOW_ALL_ORIGINS = True # 개발단계에서만 ㅇㅇ => 나중에 꼭 수정 !!!!! 
+
+#########
+
+# ✅ STATIC 설정
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # 꼭 필요!
+
+# ✅ whitenoise 파일 압축 설정
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
