@@ -5,6 +5,9 @@ class QuestionPool(models.Model):
     content = models.TextField(unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return self.content
+
 class Question(models.Model):
     family       = models.ForeignKey("Family.Family",
                                      on_delete=models.CASCADE,

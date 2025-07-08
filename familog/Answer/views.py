@@ -57,6 +57,14 @@ class AnswerView(APIView):
         serializer = AnswerCreateSerializer(data=request.data)
         if serializer.is_valid():
             answer = serializer.save(member=member, question=question)
+
+            #모든 가족 구성원이 답변을 완료했는지 확인
+            total_members = question.family.members.count()
+            current_answer_count = Answer.objects.filter(question=question).count()
+            if current_answer_count >= total_members:
+                question.is_completed = True
+                question.save()
+
             return Response({"answerId": answer.id}, status=201)
         return Response(serializer.errors, status=400)
 
