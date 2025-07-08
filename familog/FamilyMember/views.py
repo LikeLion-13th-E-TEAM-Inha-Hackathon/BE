@@ -87,6 +87,7 @@ class MemberDeleteView(generics.DestroyAPIView):
     - 대상이 자기 자신 → 탈퇴
     - 요청자가 방장  → 추방
     응답 : 204 No Content
+    - 추방 시 유저는 남고, 가족 멤버십만 삭제됨
     """
     permission_classes = [permissions.IsAuthenticated]
     lookup_url_kwarg = "pk"
@@ -99,10 +100,12 @@ class MemberDeleteView(generics.DestroyAPIView):
         family = _get_family(self.kwargs["code"])
         target = self.get_object()
 
-        # 자기 자신 or 방장만 가능
+        # 1. 자기 자신 or 방장만 가능
         if target.user != request.user and not _is_leader(request.user, family):
             return Response({"detail": "권한이 없습니다."},
                             status=status.HTTP_403_FORBIDDEN)
 
-        # 방장이 자기 자신 탈퇴하려면 최소 1인 방장 교체 체크(생략 가능)
-        return super().destroy(request, *args, **kwargs)
+        # 2. 멤버십만 삭제 (유저 계정은 유지)
+        target.delete()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
