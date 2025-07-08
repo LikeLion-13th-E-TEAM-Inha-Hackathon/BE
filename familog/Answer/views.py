@@ -8,6 +8,7 @@ from drf_yasg import openapi
 
 from .models import Answer
 from .serializers import AnswerCreateSerializer, AnswerListSerializer
+from Family.models import Family
 from Question.models import Question
 from FamilyMember.models import FamilyMember
 
@@ -57,6 +58,11 @@ class AnswerView(APIView):
         serializer = AnswerCreateSerializer(data=request.data)
         if serializer.is_valid():
             answer = serializer.save(member=member, question=question)
+
+            #seeds +50
+            family = member.family
+            family.seeds += 50
+            family.save()
 
             #모든 가족 구성원이 답변을 완료했는지 확인
             total_members = question.family.members.count()
