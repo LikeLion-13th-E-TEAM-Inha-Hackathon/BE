@@ -58,7 +58,7 @@ class FamilyCreateView(generics.CreateAPIView):
 # ────────────────────────────────────────────────────────────
 class FamilyDetailView(generics.RetrieveAPIView):
     """
-    응답 : {"code":"ABC12345", "seeds":700}
+    응답 : {"name": "상어가족", "code":"ABC12345", "seeds":700}
     """
     queryset = Family.objects.all()
     serializer_class = FamilyDetailSerializer

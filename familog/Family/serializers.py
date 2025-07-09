@@ -23,7 +23,7 @@ class FamilyCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Family
-        fields = ("code", "name")
+        fields = ['name', 'code', 'seeds']
 
     def create(self, validated_data):
         return Family.objects.create(code=_generate_code(), **validated_data)
