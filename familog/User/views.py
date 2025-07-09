@@ -27,11 +27,18 @@ class LoginView(generics.GenericAPIView):
         user = serializer.validated_data
         refresh = RefreshToken.for_user(user)
 
+        # 가족 코드 가져오기
+        code = None
+        member = FamilyMember.objects.filter(user=user).first()
+        if member:
+            code = member.family.code
+
         return Response({
             'refresh': str(refresh),
             'access': str(refresh.access_token),
             'nickname': user.nickname,
             'email': user.email,
+            'code': code  # ✅ 추가
         })
         
 # ✅ 회원 탈퇴
