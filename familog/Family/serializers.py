@@ -40,6 +40,6 @@ class FamilyCreateSerializer(serializers.ModelSerializer):
 class FamilyDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Family
-        fields = ("code", "seeds")
+        fields = ("name","code", "seeds")
         read_only_fields = fields
 
