@@ -32,11 +32,13 @@ class LoginView(generics.GenericAPIView):
         user = serializer.validated_data
         refresh = RefreshToken.for_user(user)
 
-        # 가족 코드 가져오기
+        # 가족 코드 + 가족 이름 가져오기
         code = None
-        member = FamilyMember.objects.filter(user=user).first()
+        family_name = None
+        member = FamilyMember.objects.filter(user=user).select_related("family").first()
         if member:
             code = member.family.code
+            family_name = member.family.name  # ✅ 가족 이름 가져오기
 
         return Response({
             'refresh': str(refresh),
@@ -44,8 +46,10 @@ class LoginView(generics.GenericAPIView):
             'userId': user.id,
             'nickname': user.nickname,
             'email': user.email,
-            'code': code
+            'code': code,
+            'familyName': family_name   # ✅ 프론트 기대 필드
         })
+
 
 
 # ─────────────────────────────────────────────
