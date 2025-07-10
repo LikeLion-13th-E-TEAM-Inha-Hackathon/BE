@@ -36,6 +36,7 @@ class LoginView(generics.GenericAPIView):
         return Response({
             'refresh': str(refresh),
             'access': str(refresh.access_token),
+            "userId": user.id,        
             'nickname': user.nickname,
             'email': user.email,
             'code': code  # ✅ 추가
