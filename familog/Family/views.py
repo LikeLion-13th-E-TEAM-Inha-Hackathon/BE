@@ -27,7 +27,7 @@ from Plant.models import Plant
 # ────────────────────────────────────────────────────────────
 class FamilyCreateView(generics.CreateAPIView):
     """
-    요청  : {"name":"우리집"}
+    요청  : {"name":"우리집", "plant":"sunflower"} ← 프론트에서 보냄
     응답  : {"code":"ABC12345"}
     """
     serializer_class = FamilyCreateSerializer
@@ -36,7 +36,10 @@ class FamilyCreateView(generics.CreateAPIView):
     def perform_create(self, serializer):
         family = serializer.save()
 
-        # 1. 요청자가 로그인된 유저인 경우 => 방장으로 추가
+        # ✅ 프론트에서 전달된 식물 타입 가져오기
+        plant_type = self.request.data.get("plant", "기본식물 🌱")
+
+        # 1. 요청자가 로그인된 유저인 경우 → 방장으로 추가
         if self.request.user and self.request.user.is_authenticated:
             FamilyMember.objects.create(
                 user=self.request.user,
@@ -44,12 +47,12 @@ class FamilyCreateView(generics.CreateAPIView):
                 role=FamilyMember.LEADER
             )
 
-        # 2. 식물 자동 생성
+        # 2. 식물 생성 (type 필드 반영)
         Plant.objects.create(
             family=family,
-            type="기본식물 🌱",
+            type=plant_type,
             grow_level=0,
-            last_watered=None
+            watering_count=0
         )
 
 
