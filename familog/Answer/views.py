@@ -59,12 +59,12 @@ class AnswerView(APIView):
         if serializer.is_valid():
             answer = serializer.save(member=member, question=question)
 
-            #seeds +50
+            # ✅ seeds +50
             family = member.family
             family.seeds += 50
             family.save()
 
-            #모든 가족 구성원이 답변을 완료했는지 확인
+            # ✅ 모든 가족 구성원이 답변을 완료했는지 확인
             total_members = question.family.members.count()
             current_answer_count = Answer.objects.filter(question=question).count()
             if current_answer_count >= total_members:
