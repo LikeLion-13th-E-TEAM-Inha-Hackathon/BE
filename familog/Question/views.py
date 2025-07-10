@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -7,15 +6,14 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
 from .models import Question, QuestionPool
+from .serializers import QuestionSerializer, QuestionPoolCreateSerializer
 from Family.models import Family
 from django.utils.timezone import localdate
 from django.shortcuts import get_object_or_404
 import random
 
-@swagger_auto_schema(
-    method='get',
-    responses={200: openapi.Response("오늘의 질문")},
-)
+
+@swagger_auto_schema(method='get', responses={200: QuestionSerializer})
 @api_view(["GET"])
 def get_today_question(request, code):
     family = get_object_or_404(Family, code=code)
@@ -38,16 +36,12 @@ def get_today_question(request, code):
         question.content = selected.content
         question.save()
 
-    return Response({
-        "id": question.id,
-        "date": str(question.q_date),
-        "content": question.content,
-        "is_completed": question.is_completed
-    })
+    serializer = QuestionSerializer(question)
+    return Response(serializer.data)
 
 
 class QuestionView(APIView):
-    @swagger_auto_schema(responses={200: openapi.Response("질문 서랍")})
+    @swagger_auto_schema(responses={200: QuestionSerializer(many=True)})
     def get(self, request, code):
         family = get_object_or_404(Family, code=code)
         completed = request.GET.get("completed")
@@ -56,33 +50,16 @@ class QuestionView(APIView):
         if completed == "1":
             questions = questions.filter(is_completed=True)
 
-        response = [
-            {
-                "id": q.id,
-                "date": str(q.q_date),
-                "is_completed": q.is_completed
-            }
-            for q in questions.order_by("-q_date")
-        ]
-        return Response(response)
+        serializer = QuestionSerializer(questions.order_by("-q_date"), many=True)
+        return Response(serializer.data)
 
     @swagger_auto_schema(
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            required=["content"],
-            properties={
-                "content": openapi.Schema(type=openapi.TYPE_STRING)
-            }
-        ),
-        responses={200: openapi.Response("질문 추가")}
+        request_body=QuestionPoolCreateSerializer,
+        responses={200: openapi.Response("질문 추가 성공", QuestionPoolCreateSerializer)}
     )
-    def post(self, request, code=None):  # code는 무시됨
-        content = request.data.get("content")
-        if not content:
-            return Response({"message": "Invalid request"}, status=400)
-
-        if QuestionPool.objects.filter(content=content).exists():
-            return Response({"message": "이미 존재하는 질문입니다."}, status=400)
-
-        q = QuestionPool.objects.create(content=content)
-        return Response({"id": q.id})
+    def post(self, request, code=None):
+        serializer = QuestionPoolCreateSerializer(data=request.data)
+        if serializer.is_valid():
+            question = serializer.save()
+            return Response({"id": question.id})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

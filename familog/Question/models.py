@@ -9,11 +9,9 @@ class QuestionPool(models.Model):
         return self.content
 
 class Question(models.Model):
-    family       = models.ForeignKey("Family.Family",
-                                     on_delete=models.CASCADE,
-                                     related_name="questions")
-    q_date       = models.DateField(default=timezone.localdate)
-    content      = models.TextField()
+    family = models.ForeignKey("Family.Family", on_delete=models.CASCADE, related_name="questions")
+    q_date = models.DateField(default=timezone.localdate)
+    content = models.TextField()
     is_completed = models.BooleanField(default=False)
 
     class Meta:
