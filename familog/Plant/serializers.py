@@ -5,17 +5,24 @@ from .models import Plant
 
 # ────────────────────────────────────────────────────────────
 # ① 화분 상태  GET /families/{code}/plant
-#    응답 예 : { "plantId":2, "growLevel":5, "lastWatered":"2025-07-04T12:00" }
+#    응답 예 : {
+#      "plantId": 2,
+#      "growLevel": 5,
+#      "lastWatered": "2025-07-04T12:00",
+#      "type": "sunflower"  ← ✅ 추가됨
+#    }
 # ────────────────────────────────────────────────────────────
 class PlantDetailSerializer(serializers.ModelSerializer):
     plantId     = serializers.IntegerField(source="id", read_only=True)
     growLevel   = serializers.IntegerField(source="grow_level", read_only=True)
     lastWatered = serializers.DateTimeField(source="last_watered", read_only=True)
+    type        = serializers.CharField(read_only=True)  # ✅ 추가된 필드
 
     class Meta:
         model  = Plant
-        fields = ("plantId", "growLevel", "lastWatered")
+        fields = ("plantId", "growLevel", "lastWatered", "type")  # ✅ type 포함
         read_only_fields = fields
+
 
 
 # ────────────────────────────────────────────────────────────
