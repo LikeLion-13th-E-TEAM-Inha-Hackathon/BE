@@ -93,15 +93,11 @@ class UserDeleteView(generics.DestroyAPIView):
 class UserDetailView(APIView):
     """
     GET /users/<id>/ — 사용자 정보 + 가족 구성원 + 가족 코드 반환
-    - 본인만 조회 가능
+    - 누구나 조회 가능
     """
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]  # ✅ 누구나 접근 가능
 
     def get(self, request, pk):
-        if str(request.user.id) != pk:
-            return Response({"detail": "본인 정보만 조회 가능합니다."},
-                            status=status.HTTP_403_FORBIDDEN)
-
         user = get_object_or_404(User, pk=pk)
 
         user_info = {
