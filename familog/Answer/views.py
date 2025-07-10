@@ -50,8 +50,12 @@ class AnswerView(APIView):
         except Question.DoesNotExist:
             return Response({"error": "Question not found"}, status=404)
 
-        member = get_family_member(request.user)
+        try:
+            member = get_family_member(request.user)
+        except FamilyMember.DoesNotExist:
+            return Response({"error": "FamilyMember not found"}, status=404)
 
+        # 🔒 이미 답변한 경우 중복 방지
         if Answer.objects.filter(question=question, member=member).exists():
             return Response({"error": "Answer already exists"}, status=400)
 
@@ -60,18 +64,22 @@ class AnswerView(APIView):
             answer = serializer.save(member=member, question=question)
 
             # ✅ seeds +50
-            family = member.family
+            family = question.family  # 더 명확하게 question에서 family 참조
+            old_seeds = family.seeds
             family.seeds += 50
             family.save()
+            print(f"[포인트] {family.name} ({family.code}): {old_seeds} → {family.seeds}")
 
-            # ✅ 모든 가족 구성원이 답변을 완료했는지 확인
-            total_members = question.family.members.count()
+            # ✅ 가족 구성원 답변 완료 여부 체크
+            total_members = family.members.count()
             current_answer_count = Answer.objects.filter(question=question).count()
             if current_answer_count >= total_members:
                 question.is_completed = True
                 question.save()
+                print("[완료] 모든 가족 구성원이 답변을 완료했습니다.")
 
             return Response({"answerId": answer.id}, status=201)
+
         return Response(serializer.errors, status=400)
 
 
